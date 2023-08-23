@@ -1,6 +1,8 @@
 """Support for DSMR Reader through MQTT."""
 from __future__ import annotations
 
+from math import isfinite, isnan
+
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -42,7 +44,11 @@ class DSMRSensor(SensorEntity):
         @callback
         def message_received(message):
             """Handle new MQTT messages."""
-            if message.payload == "":
+            if (
+                message.payload == ""
+                or isnan(message.payload)
+                or not isfinite(message.payload)
+            ):
                 self._attr_native_value = None
             elif self.entity_description.state is not None:
                 # Perform optional additional parsing
